@@ -4,8 +4,8 @@
 
 Summary:    Xorg X11 mach64 video driver
 Name:	    xorg-x11-drv-mach64
-Version:    6.9.4
-Release:    10%{?dist}
+Version:    6.9.5
+Release:    1%{?dist}
 URL:	    http://www.x.org
 License:    MIT
 Group:	    User Interface/X Hardware Support
@@ -13,7 +13,6 @@ Group:	    User Interface/X Hardware Support
 Source0:    http://www.x.org/pub/individual/driver/%{tarball}-%{version}.tar.bz2
 
 Patch0:	    mach64-6.8.1-defaultdepth.patch
-Patch1:	    0001-preinit-Don-t-bother-explicitly-loading-int10-vbe-wi.patch
 
 ExcludeArch: s390 s390x
 
@@ -32,7 +31,6 @@ X.Org X11 mach64 video driver.
 %prep
 %setup -q -n %{tarball}-%{version}
 %patch0 -p1 -b .defaultdepth
-%patch1 -p1 -b .int10
 
 %build
 autoreconf -vif
@@ -56,6 +54,9 @@ rm -rf $RPM_BUILD_ROOT
 #{_mandir}/man4/mach64.4*
 
 %changelog
+* Tue Oct 25 2016 Adam Jackson <ajax@redhat.com> - 6.9.5-1
+- mach64 6.9.5
+
 * Wed Nov 11 2015 Adam Jackson <ajax@redhat.com> - 6.9.4-10
 - Rebuild for server 1.17
 
