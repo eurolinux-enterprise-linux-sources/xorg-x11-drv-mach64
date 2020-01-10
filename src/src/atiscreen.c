@@ -476,21 +476,11 @@ ATIScreenInit(SCREEN_INIT_ARGS_DECL)
         }
     }
 
-    /* If applicable, initialise RENDER extension */
+    /* initialise RENDER extension */
+    if (!fbPictureInit(pScreen, NULL, 0) && (serverGeneration == 1))
     {
-        if (pATI->OptionShadowFB)
-        {
-            if (serverGeneration == 1)
-                xf86DrvMsg(pScreenInfo->scrnIndex, X_WARNING,
-                    "RENDER extension not supported with a shadowed"
-                    " framebuffer.\n");
-        }
-        else if (!fbPictureInit(pScreen, NULL, 0) &&
-                 (serverGeneration == 1))
-        {
-            xf86DrvMsg(pScreenInfo->scrnIndex, X_WARNING,
-                "RENDER extension initialisation failed.\n");
-        }
+	xf86DrvMsg(pScreenInfo->scrnIndex, X_WARNING,
+	    "RENDER extension initialisation failed.\n");
     }
 
     xf86SetBlackWhitePixels(pScreen);
@@ -542,7 +532,6 @@ ATIScreenInit(SCREEN_INIT_ARGS_DECL)
 #endif /* AVOID_DGA */
 
     /* Initialise backing store */
-    miInitializeBackingStore(pScreen);
     xf86SetBackingStore(pScreen);
 
     /* Initialise cursor */
@@ -580,7 +569,7 @@ ATIScreenInit(SCREEN_INIT_ARGS_DECL)
 #ifdef TV_OUT
     /* Fix-up TV out after ImpacTV probe */
     if (pATI->OptionTvOut && pATI->Chip < ATI_CHIP_264GTPRO)
-        ATISwitchMode(0, pScreenInfo->currentMode, 0);
+        ATISwitchMode(SWITCH_MODE_ARGS(pScreenInfo, pScreenInfo->currentMode));
 #endif /* TV_OUT */
 
 #ifdef XF86DRI_DEVEL

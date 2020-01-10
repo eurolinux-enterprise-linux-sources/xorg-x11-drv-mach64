@@ -4,33 +4,26 @@
 
 Summary:    Xorg X11 mach64 video driver
 Name:	    xorg-x11-drv-mach64
-Version:    6.9.3
-Release:    4.1%{?dist}
+Version:    6.9.4
+Release:    8%{?dist}
 URL:	    http://www.x.org
 License:    MIT
 Group:	    User Interface/X Hardware Support
-BuildRoot:  %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 Source0:    http://www.x.org/pub/individual/driver/%{tarball}-%{version}.tar.bz2
-Source1:    mach64.xinf
 
 Patch0:	    mach64-6.8.1-defaultdepth.patch
-Patch1:     0001-mach64-fix-build-on-32-bit.patch
-Patch2:	    mach64-6.9.3-shadowfb.patch
-Patch3:	    mach64-6.9.3-fix-no-exa-build.patch
-Patch4:	    0001-preinit-Don-t-bother-explicitly-loading-int10-vbe-wi.patch
 
 ExcludeArch: s390 s390x
 
-BuildRequires: xorg-x11-server-sdk >= 1.10.99.902
+BuildRequires: xorg-x11-server-devel >= 1.10.99.902
 BuildRequires: mesa-libGL-devel >= 6.4-4
 BuildRequires: libdrm-devel >= 2.0-1
 BuildRequires: automake autoconf libtool pkgconfig
 BuildRequires: xorg-x11-util-macros >= 1.1.5
 
-Requires:  hwdata
-Requires:  Xorg %(xserver-sdk-abi-requires ansic)
-Requires:  Xorg %(xserver-sdk-abi-requires videodrv)
+Requires: Xorg %(xserver-sdk-abi-requires ansic)
+Requires: Xorg %(xserver-sdk-abi-requires videodrv)
 
 %description 
 X.Org X11 mach64 video driver.
@@ -38,13 +31,9 @@ X.Org X11 mach64 video driver.
 %prep
 %setup -q -n %{tarball}-%{version}
 %patch0 -p1 -b .defaultdepth
-%patch1 -p1 -b .fix32
-%patch2 -p1 -b .shadowfb
-%patch3 -p1 -b .ftbfs
-%patch4 -p1 -b .vbe
 
 %build
-# aclocal ; automake -a ; autoconf
+autoreconf -vif
 %configure --disable-static --disable-dri --disable-exa
 make %{?_smp_mflags}
 
@@ -53,9 +42,6 @@ rm -rf $RPM_BUILD_ROOT
 
 make install DESTDIR=$RPM_BUILD_ROOT
 
-mkdir -p $RPM_BUILD_ROOT%{_datadir}/hwdata/videoaliases
-install -m 0644 %{SOURCE1} $RPM_BUILD_ROOT%{_datadir}/hwdata/videoaliases/
-
 find $RPM_BUILD_ROOT -regex ".*\.la$" | xargs rm -f --
 
 %clean
@@ -63,32 +49,106 @@ rm -rf $RPM_BUILD_ROOT
 
 %files
 %defattr(-,root,root,-)
+%doc README
 %{driverdir}/mach64_drv.so
-%{_datadir}/hwdata/videoaliases/mach64.xinf
 #{_mandir}/man4/mach64.4*
 
 %changelog
-* Wed May 15 2013 Adam Jackson <ajax@redhat.com> 6.9.3-4.1
-- Fix a crash in preinit (#963219)
+* Mon Apr 28 2014 Adam Jackson <ajax@redhat.com> - 6.9.4-8
+- Fix rhel arch list
 
-* Tue Oct 02 2012 Adam Jackson <ajax@redhat.com> 6.9.3-4
-- Disable EXA and DRI, use ShadowFB by default, and don't gratuitously disable
-  Render when using ShadowFB. (#860676)
+* Sun Aug 04 2013 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 6.9.4-7
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_20_Mass_Rebuild
 
-* Tue Aug 29 2012 Jerome Glisse <jglisse@redhat.com> 6.9.3-3
-- Resolves: #835239
+* Thu Mar 07 2013 Dave Airlie <airlied@redhat.com> 6.9.4-6
+- autoreconf for aarch64
 
-* Wed Aug 22 2012 airlied@redhat.com - 6.9.3-2
-- rebuild for server ABI requires
+* Thu Mar 07 2013 Peter Hutterer <peter.hutterer@redhat.com> - 6.9.4-5
+- require xorg-x11-server-devel, not -sdk
 
-* Mon Aug 06 2012 Jerome Glisse <jglisse@redhat.com> 6.9.3-1
-- latest upstream release 6.9.3
+* Thu Mar 07 2013 Peter Hutterer <peter.hutterer@redhat.com> - 6.9.4-4
+- ABI rebuild
 
-* Tue Jun 28 2011 Ben Skeggs <bskeggs@redhat.com> 6.9.0-1
-- upstream release 6.9.0
+* Fri Feb 15 2013 Peter Hutterer <peter.hutterer@redhat.com> - 6.9.4-3
+- ABI rebuild
 
-* Mon Nov 30 2009 Dennis Gregorovic <dgregor@redhat.com> - 6.8.2-1.1
-- Rebuilt for RHEL 6
+* Fri Feb 15 2013 Peter Hutterer <peter.hutterer@redhat.com> - 6.9.4-2
+- ABI rebuild
+
+* Wed Jan 09 2013 Adam Jackson <ajax@redhat.com> 6.9.4-1
+- mach64 6.9.4
+
+* Mon Oct 01 2012 Adam Jackson <ajax@redhat.com> 6.9.3-5
+- mach64-6.9.3-shadowfb.patch: Allow Render even when doing ShadowFB.
+- Disable EXA as well, it's completely broken.
+- mach64-6.9.3-fix-no-exa-build.patch: Fix building with neither XAA nor EXA.
+
+* Wed Sep 26 2012 Adam Jackson <ajax@redhat.com> 6.9.3-4
+- Disable DRI support, we've never built the 3D driver and it's been nuked
+  from upstream Mesa anyway.
+
+* Sun Jul 22 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 6.9.3-3
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_18_Mass_Rebuild
+
+* Wed Jul 18 2012 Dave Airlie <airlied@redhat.com> 6.9.3-2
+- add build fix patch for 32-bit
+
+* Wed Jul 18 2012 Dave Airlie <airlied@redhat.com> 6.9.3-1
+- mach64 6.9.3
+
+* Fri Apr 27 2012 Adam Jackson <ajax@redhat.com> 6.9.1-1
+- mach64 6.9.1
+
+* Thu Apr 05 2012 Adam Jackson <ajax@redhat.com> - 6.9.0-10
+- RHEL arch exclude updates
+
+* Sat Feb 11 2012 Peter Hutterer <peter.hutterer@redhat.com> - 6.9.0-9
+- ABI rebuild
+
+* Fri Feb 10 2012 Peter Hutterer <peter.hutterer@redhat.com> - 6.9.0-8
+- ABI rebuild
+
+* Tue Jan 24 2012 Peter Hutterer <peter.hutterer@redhat.com> - 6.9.0-7
+- ABI rebuild
+
+* Wed Jan 04 2012 Peter Hutterer <peter.hutterer@redhat.com> - 6.9.0-6
+- Rebuild for server 1.12
+
+* Fri Dec 16 2011 Adam Jackson <ajax@redhat.com> - 6.9.0-5
+- Drop xinf file
+
+* Mon Nov 14 2011 Adam Jackson <ajax@redhat.com> - 6.9.0-4
+- ABI rebuild
+
+* Wed Nov 09 2011 ajax <ajax@redhat.com> - 6.9.0-3
+- ABI rebuild
+
+* Thu Aug 18 2011 Adam Jackson <ajax@redhat.com> - 6.9.0-2
+- Rebuild for xserver 1.11 ABI
+
+* Tue Jun 21 2011 Adam Jackson <ajax@redhat.com> 6.9.0-1
+- mach64 6.9.0
+
+* Wed May 11 2011 Peter Hutterer <peter.hutterer@redhat.com> - 6.8.2-8
+- Rebuild for server 1.11
+
+* Mon Feb 28 2011 Peter Hutterer <peter.hutterer@redhat.com> - 6.8.2-7
+- Rebuild for server 1.10
+
+* Tue Feb 08 2011 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 6.8.2-6
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_15_Mass_Rebuild
+
+* Thu Dec 02 2010 Dave Airlie <airlied@redhat.com> 6.8.2-5
+- fix pixmap private API
+
+* Wed Oct 27 2010 Adam Jackson <ajax@redhat.com> 6.8.2-4
+- Add ABI requires magic (#542742)
+
+* Mon Jul 05 2010 Peter Hutterer <peter.hutterer@redhat.com> - 6.8.2-3
+- rebuild for X Server 1.9
+
+* Thu Jan 21 2010 Peter Hutterer <peter.hutterer@redhat.com> - 6.8.2-2
+- Rebuild for server 1.8
 
 * Tue Aug 04 2009 Dave Airlie <airlied@redhat.com> 6.8.2-1
 - mach64 6.8.2
