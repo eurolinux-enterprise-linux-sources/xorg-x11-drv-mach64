@@ -5,7 +5,7 @@
 Summary:    Xorg X11 mach64 video driver
 Name:	    xorg-x11-drv-mach64
 Version:    6.9.4
-Release:    9%{?dist}
+Release:    10%{?dist}
 URL:	    http://www.x.org
 License:    MIT
 Group:	    User Interface/X Hardware Support
@@ -56,6 +56,9 @@ rm -rf $RPM_BUILD_ROOT
 #{_mandir}/man4/mach64.4*
 
 %changelog
+* Wed Nov 11 2015 Adam Jackson <ajax@redhat.com> - 6.9.4-10
+- Rebuild for server 1.17
+
 * Mon May 04 2015 Adam Jackson <ajax@redhat.com> 6.9.4-9
 - Fix crash in int10 setup
 
